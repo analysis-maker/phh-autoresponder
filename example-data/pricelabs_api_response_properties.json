@@ -1,0 +1,153 @@
+{
+  "status": "success",
+  "data": {
+    "properties": [
+      {
+        "id": "12345",
+        "name": "Bondi Beach Apartment",
+        "status": "active",
+        "pricing_settings": {
+          "base_price": 250,
+          "min_price": 175,
+          "max_price": 375,
+          "current_strategy": "dynamic_base",
+          "last_updated": "2025-11-13T18:00:00Z"
+        },
+        "performance_metrics": {
+          "occupancy_last_30_days": 55,
+          "occupancy_last_7_days": 42,
+          "average_daily_rate": 248,
+          "revenue_last_30_days": 4092,
+          "nights_booked_last_30_days": 16.5
+        },
+        "booking_data": {
+          "next_booking_date": "2025-11-20",
+          "next_booking_nights": 3,
+          "total_bookings_current_month": 4,
+          "cancellations_last_30_days": 0
+        },
+        "location": {
+          "suburb": "Bondi",
+          "state": "NSW",
+          "coordinates": {
+            "lat": -33.8915,
+            "lng": 151.2767
+          }
+        },
+        "property_details": {
+          "bedrooms": 2,
+          "bathrooms": 2,
+          "max_guests": 4,
+          "property_type": "apartment"
+        },
+        "custom_pricing_rules": [
+          {
+            "rule_id": "summer_premium",
+            "active": true,
+            "date_range": {
+              "start": "2025-12-01",
+              "end": "2026-02-28"
+            },
+            "adjustment_type": "percentage",
+            "adjustment_value": 20
+          }
+        ]
+      },
+      {
+        "id": "12346",
+        "name": "Manly Beach House",
+        "status": "active",
+        "pricing_settings": {
+          "base_price": 350,
+          "min_price": 245,
+          "max_price": 525,
+          "current_strategy": "dynamic_base",
+          "last_updated": "2025-11-13T18:00:00Z"
+        },
+        "performance_metrics": {
+          "occupancy_last_30_days": 72,
+          "occupancy_last_7_days": 85,
+          "average_daily_rate": 365,
+          "revenue_last_30_days": 7884,
+          "nights_booked_last_30_days": 21.6
+        },
+        "booking_data": {
+          "next_booking_date": "2025-11-16",
+          "next_booking_nights": 5,
+          "total_bookings_current_month": 6,
+          "cancellations_last_30_days": 1
+        },
+        "location": {
+          "suburb": "Manly",
+          "state": "NSW",
+          "coordinates": {
+            "lat": -33.7969,
+            "lng": 151.2840
+          }
+        },
+        "property_details": {
+          "bedrooms": 3,
+          "bathrooms": 2,
+          "max_guests": 6,
+          "property_type": "house"
+        },
+        "custom_pricing_rules": []
+      },
+      {
+        "id": "12347",
+        "name": "Sydney CBD Studio",
+        "status": "active",
+        "pricing_settings": {
+          "base_price": 180,
+          "min_price": 126,
+          "max_price": 270,
+          "current_strategy": "dynamic_base",
+          "last_updated": "2025-11-13T18:00:00Z"
+        },
+        "performance_metrics": {
+          "occupancy_last_30_days": 38,
+          "occupancy_last_7_days": 28,
+          "average_daily_rate": 175,
+          "revenue_last_30_days": 1995,
+          "nights_booked_last_30_days": 11.4
+        },
+        "booking_data": {
+          "next_booking_date": "2025-11-16",
+          "next_booking_nights": 2,
+          "total_bookings_current_month": 3,
+          "cancellations_last_30_days": 0
+        },
+        "location": {
+          "suburb": "Sydney",
+          "state": "NSW",
+          "coordinates": {
+            "lat": -33.8688,
+            "lng": 151.2093
+          }
+        },
+        "property_details": {
+          "bedrooms": 1,
+          "bathrooms": 1,
+          "max_guests": 2,
+          "property_type": "apartment"
+        },
+        "custom_pricing_rules": [],
+        "flags": {
+          "consecutive_low_performance": 2,
+          "requires_review": false
+        }
+      }
+    ],
+    "pagination": {
+      "total_properties": 8,
+      "current_page": 1,
+      "per_page": 50,
+      "total_pages": 1
+    }
+  },
+  "meta": {
+    "request_id": "req_phh_20251114_001",
+    "timestamp": "2025-11-14T06:00:00Z",
+    "api_version": "v1"
+  }
+}

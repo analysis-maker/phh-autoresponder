@@ -1,0 +1,12 @@
+property_id,property_name,location,suburb,state,bedrooms,bathrooms,property_type,max_guests,template_property_id,base_rate,min_rate,max_rate,cleaning_fee,status,owner_email,created_date,last_updated,notes
+12345,Bondi Beach Apartment,123 Campbell Parade,Bondi,NSW,2,2,apartment,4,67890,250,175,375,150,active,owner1@example.com,2025-01-15,2025-11-14,Popular beachfront location
+12346,Manly Beach House,45 North Steyne,Manly,NSW,3,2,house,6,67890,350,245,525,180,active,owner2@example.com,2025-02-20,2025-11-14,Family-friendly with garden
+12347,Sydney CBD Studio,789 George Street,Sydney,NSW,1,1,apartment,2,67891,180,126,270,100,active,owner3@example.com,2025-03-10,2025-11-14,Central business district
+12348,Surry Hills Terrace,56 Crown Street,Surry Hills,NSW,2,1,terrace,4,67890,280,196,420,150,active,owner4@example.com,2025-04-05,2025-11-14,Trendy inner-city location
+12349,Coogee Beach Unit,234 Coogee Bay Road,Coogee,NSW,2,1,apartment,4,67890,240,168,360,130,active,owner5@example.com,2025-05-12,2025-11-14,Ocean views
+12350,Darling Harbour Luxury,101 Harbourside Place,Darling Harbour,NSW,3,2,apartment,6,67892,450,315,675,200,active,owner6@example.com,2025-06-18,2025-11-14,Premium waterfront
+12351,Newtown Victorian House,78 King Street,Newtown,NSW,4,2,house,8,67890,420,294,630,220,active,owner7@example.com,2025-07-22,2025-11-14,Renovated heritage property
+12352,Bronte Beach Cottage,12 Bronte Road,Bronte,NSW,2,1,house,4,67890,290,203,435,160,setup,owner8@example.com,2025-11-14,2025-11-14,New listing - under review
+67890,TEMPLATE - Standard 2BR Beach,Template Street,Template,NSW,2,1,apartment,4,,220,154,330,150,template,template@phh.com.au,2024-01-01,2025-11-14,Base template for 2BR beach properties
+67891,TEMPLATE - CBD Studio,Template Street,Template,NSW,1,1,apartment,2,,160,112,240,100,template,template@phh.com.au,2024-01-01,2025-11-14,Base template for studio apartments
+67892,TEMPLATE - Luxury 3BR,Template Street,Template,NSW,3,2,apartment,6,,400,280,600,200,template,template@phh.com.au,2024-01-01,2025-11-14,Base template for luxury properties

@@ -1,0 +1,21 @@
+parameter_name,value,data_type,description,last_updated
+low_occupancy_threshold,60,percentage,Occupancy below this triggers discount consideration,2025-11-14
+discount_percentage_tier1,10,percentage,Discount for 50-60% occupancy,2025-11-14
+discount_percentage_tier2,15,percentage,Discount for 40-50% occupancy,2025-11-14
+discount_percentage_tier3,20,percentage,Discount for <40% occupancy,2025-11-14
+weekend_adjustment_days,5,integer,Days before check-in to apply weekend pricing,2025-11-14
+last_minute_days,3,integer,Days threshold for emergency discounts,2025-11-14
+last_minute_discount,25,percentage,Emergency discount for last-minute vacancies,2025-11-14
+approval_threshold_percentage,15,percentage,Discount % requiring manual approval,2025-11-14
+approval_threshold_amount,50,currency,Price change $ requiring manual approval,2025-11-14
+weekend_premium_percentage,15,percentage,Weekend rate increase for high-demand,2025-11-14
+min_price_multiplier,0.7,decimal,Minimum price as % of base rate,2025-11-14
+max_price_multiplier,1.5,decimal,Maximum price as % of base rate,2025-11-14
+high_occupancy_threshold,85,percentage,Occupancy above this for price increase,2025-11-14
+price_increase_percentage,5,percentage,Incremental increase when occupancy high,2025-11-14
+analysis_lookback_days,30,integer,Days to analyze for occupancy trends,2025-11-14
+consecutive_low_threshold,3,integer,Weeks of low performance before flagging,2025-11-14
+peer_comparison_radius_km,5,integer,Distance for finding comparable properties,2025-11-14
+peer_price_variance_limit,20,percentage,Max variance from peers before review,2025-11-14
+revenue_target_variance,15,percentage,Variance from target before alert,2025-11-14
+cleaning_fee_base,150,currency,Standard cleaning fee,2025-11-14

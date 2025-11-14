@@ -1,0 +1,61 @@
+{
+  "event_type": "new_property_added",
+  "timestamp": "2025-11-14T10:30:00Z",
+  "source": "PHH_Admin_Portal",
+  "data": {
+    "property_name": "Bronte Beach Cottage",
+    "property_type": "house",
+    "bedrooms": 2,
+    "bathrooms": 1,
+    "max_guests": 4,
+    "location": {
+      "address": "12 Bronte Road",
+      "suburb": "Bronte",
+      "state": "NSW",
+      "postcode": "2024",
+      "country": "Australia",
+      "latitude": -33.9048,
+      "longitude": 151.2680
+    },
+    "amenities": [
+      "wifi",
+      "parking",
+      "air_conditioning",
+      "beach_access",
+      "outdoor_area"
+    ],
+    "template_property_id": "67890",
+    "owner_details": {
+      "name": "Sarah Johnson",
+      "email": "owner8@example.com",
+      "phone": "+61412345678",
+      "preferred_contact": "email"
+    },
+    "financial_targets": {
+      "target_monthly_revenue": 8500,
+      "minimum_acceptable_rate": 200,
+      "maximum_rate": 450,
+      "cleaning_fee": 160
+    },
+    "availability": {
+      "start_date": "2025-12-01",
+      "blocked_dates": [
+        "2025-12-25",
+        "2026-01-01"
+      ],
+      "owner_block_periods": [
+        {
+          "start": "2026-01-15",
+          "end": "2026-01-22",
+          "reason": "Personal use"
+        }
+      ]
+    },
+    "integration_ids": {
+      "property_management_system": "PMS_45678",
+      "airbnb_listing_id": null,
+      "booking_com_id": null
+    },
+    "notes": "Newly renovated, high-end finishes. Owner expects premium pricing."
+  }
+}

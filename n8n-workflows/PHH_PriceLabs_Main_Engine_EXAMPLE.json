@@ -1,0 +1,441 @@
+{
+  "name": "PHH PriceLabs Main Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "node-001",
+      "name": "Daily Pricing Analysis - 6AM Weekdays",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "pricing_config",
+          "mode": "list"
+        },
+        "options": {
+          "headerRow": 1
+        }
+      },
+      "id": "node-002",
+      "name": "Load Pricing Config",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.pricelabs.co/v1/properties",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-003",
+      "name": "Fetch PriceLabs Properties",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [690, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "pricelabs_api_key",
+          "name": "PriceLabs API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse configuration into usable map\nconst config = $('Load Pricing Config').all();\nconst configMap = {};\n\nconfig.forEach(row => {\n  configMap[row.json.parameter_name] = parseFloat(row.json.value);\n});\n\n// Get properties from PriceLabs\nconst properties = $json.properties;\nconst results = [];\n\nproperties.forEach(prop => {\n  // Calculate days until next booking\n  const nextBooking = new Date(prop.next_booking_date);\n  const today = new Date();\n  const daysUntilBooking = Math.ceil((nextBooking - today) / (1000 * 60 * 60 * 24));\n\n  // Get thresholds from config\n  const occupancy = prop.occupancy_last_30_days;\n  const lowOccupancyThreshold = configMap.low_occupancy_threshold || 60;\n  const weekendAdjustmentDays = configMap.weekend_adjustment_days || 5;\n\n  // Determine if action is needed\n  let actionNeeded = false;\n  let actionType = null;\n  let reasoning = [];\n\n  // Check occupancy\n  if (occupancy < lowOccupancyThreshold) {\n    actionNeeded = true;\n    actionType = 'occupancy_discount';\n    reasoning.push(`Occupancy at ${occupancy}% below threshold of ${lowOccupancyThreshold}%`);\n  }\n\n  // Check weekend vacancy\n  const dayOfWeek = nextBooking.getDay();\n  const isWeekend = dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0;\n  \n  if (isWeekend && daysUntilBooking <= weekendAdjustmentDays && occupancy < 70) {\n    actionNeeded = true;\n    actionType = 'weekend_discount';\n    reasoning.push(`Weekend in ${daysUntilBooking} days with ${occupancy}% occupancy`);\n  }\n\n  // Check last-minute\n  if (daysUntilBooking <= 3 && occupancy < 50) {\n    actionNeeded = true;\n    actionType = 'last_minute_discount';\n    reasoning.push('Critical: Last-minute vacancy');\n  }\n\n  results.push({\n    json: {\n      property_id: prop.id,\n      property_name: prop.name,\n      current_base_price: prop.base_price,\n      occupancy: occupancy,\n      days_until_booking: daysUntilBooking,\n      action_needed: actionNeeded,\n      action_type: actionType,\n      reasoning: reasoning.join('; '),\n      timestamp: new Date().toISOString(),\n      config_used: configMap\n    }\n  });\n});\n\nreturn results;"
+      },
+      "id": "node-004",
+      "name": "Calculate Performance Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.action_needed }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "node-005",
+      "name": "IF Needs Price Adjustment",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "firstMatch",
+        "rules": {
+          "rules": [
+            {
+              "output": 0,
+              "expression": "={{ $json.action_type === 'occupancy_discount' }}"
+            },
+            {
+              "output": 1,
+              "expression": "={{ $json.action_type === 'weekend_discount' }}"
+            },
+            {
+              "output": 2,
+              "expression": "={{ $json.action_type === 'last_minute_discount' }}"
+            }
+          ]
+        }
+      },
+      "id": "node-006",
+      "name": "Route by Action Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1350, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const property = $input.first().json;\nconst config = property.config_used;\n\nconst occupancy = property.occupancy;\nconst currentPrice = property.current_base_price;\n\n// Tiered discount logic\nlet discountPercentage = 0;\n\nif (occupancy < 40) {\n  discountPercentage = config.discount_percentage_tier3 || 20;\n} else if (occupancy < 50) {\n  discountPercentage = config.discount_percentage_tier2 || 15;\n} else if (occupancy < 60) {\n  discountPercentage = config.discount_percentage_tier1 || 10;\n}\n\nconst newPrice = Math.round(currentPrice * (1 - discountPercentage / 100));\nconst requiresApproval = discountPercentage >= 15;\n\nreturn {\n  json: {\n    ...property,\n    discount_percentage: discountPercentage,\n    new_base_price: newPrice,\n    price_change_amount: currentPrice - newPrice,\n    requires_manual_approval: requiresApproval,\n    adjustment_reason: `Occupancy-based: ${occupancy}% occupancy, ${discountPercentage}% discount applied`\n  }\n};"
+      },
+      "id": "node-007",
+      "name": "Calculate Occupancy Discount",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1570, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const property = $input.first().json;\nconst currentPrice = property.current_base_price;\nconst weekendDiscount = 10;\nconst newWeekendPrice = Math.round(currentPrice * 0.9);\n\nconst nextBooking = new Date(property.timestamp);\nnextBooking.setDate(nextBooking.getDate() + property.days_until_booking);\nconst dayOfWeek = nextBooking.getDay();\n\nconst weekendStart = new Date(nextBooking);\nweekendStart.setDate(weekendStart.getDate() - (dayOfWeek === 0 ? 2 : dayOfWeek === 6 ? 1 : 0));\n\nconst weekendEnd = new Date(weekendStart);\nweekendEnd.setDate(weekendEnd.getDate() + 2);\n\nreturn {\n  json: {\n    ...property,\n    action_type: 'weekend_discount',\n    discount_percentage: weekendDiscount,\n    new_weekend_price: newWeekendPrice,\n    price_change_amount: currentPrice - newWeekendPrice,\n    date_range_start: weekendStart.toISOString().split('T')[0],\n    date_range_end: weekendEnd.toISOString().split('T')[0],\n    requires_manual_approval: false,\n    adjustment_reason: `Weekend vacancy ${property.days_until_booking} days out - 10% discount`\n  }\n};"
+      },
+      "id": "node-008",
+      "name": "Calculate Weekend Discount",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1570, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const property = $input.first().json;\nconst currentPrice = property.current_base_price;\nconst emergencyDiscount = 25;\nconst newPrice = Math.round(currentPrice * 0.75);\n\nreturn {\n  json: {\n    ...property,\n    discount_percentage: emergencyDiscount,\n    new_base_price: newPrice,\n    price_change_amount: currentPrice - newPrice,\n    requires_manual_approval: false,\n    adjustment_reason: `EMERGENCY: Last-minute vacancy (${property.days_until_booking} days)`\n  }\n};"
+      },
+      "id": "node-009",
+      "name": "Calculate Last-Minute Discount",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1570, 500]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.requires_manual_approval }}",
+              "value2": false
+            }
+          ]
+        }
+      },
+      "id": "node-010",
+      "name": "IF Auto-Approval Allowed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1790, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.pricelabs.co/v1/properties/{{ $json.property_id }}/pricing",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "base_price",
+              "value": "={{ $json.new_base_price }}"
+            },
+            {
+              "name": "reason",
+              "value": "={{ $json.adjustment_reason }}"
+            },
+            {
+              "name": "applied_by",
+              "value": "PHH_Agent_Auto"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-011",
+      "name": "Update Price in PriceLabs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2010, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "pricelabs_api_key",
+          "name": "PriceLabs API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "pricing-agent@phh.com.au",
+        "toEmail": "pricing-team@phh.com.au",
+        "subject": "=APPROVAL NEEDED: {{ $json.property_name }}",
+        "emailFormat": "text",
+        "text": "=Price change requires manual approval:\n\nProperty: {{ $json.property_name }}\nCurrent Price: ${{ $json.current_base_price }}\nProposed Price: ${{ $json.new_base_price }}\nDiscount: {{ $json.discount_percentage }}%\nReason: {{ $json.adjustment_reason }}\n\nPlease review and approve via the PHH Portal.",
+        "options": {}
+      },
+      "id": "node-012",
+      "name": "Send Approval Request",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [2010, 400]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "pricing_audit_log",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "property_id": "={{ $json.property_id }}",
+            "property_name": "={{ $json.property_name }}",
+            "old_price": "={{ $json.current_base_price }}",
+            "new_price": "={{ $json.new_base_price }}",
+            "change_amount": "={{ $json.price_change_amount }}",
+            "action_type": "={{ $json.action_type }}",
+            "reasoning": "={{ $json.adjustment_reason }}",
+            "requires_approval": "={{ $json.requires_manual_approval }}",
+            "status": "={{ $json.requires_manual_approval ? 'pending_approval' : 'applied' }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "node-013",
+      "name": "Log Action to Audit",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [2230, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    message: 'No price adjustment needed',\n    property_id: $json.property_id,\n    property_name: $json.property_name,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "node-014",
+      "name": "Log No Action Needed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1350, 500]
+    }
+  ],
+  "connections": {
+    "Daily Pricing Analysis - 6AM Weekdays": {
+      "main": [
+        [
+          {
+            "node": "Load Pricing Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Pricing Config": {
+      "main": [
+        [
+          {
+            "node": "Fetch PriceLabs Properties",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch PriceLabs Properties": {
+      "main": [
+        [
+          {
+            "node": "Calculate Performance Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Performance Metrics": {
+      "main": [
+        [
+          {
+            "node": "IF Needs Price Adjustment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Needs Price Adjustment": {
+      "main": [
+        [
+          {
+            "node": "Route by Action Type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log No Action Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Action Type": {
+      "main": [
+        [
+          {
+            "node": "Calculate Occupancy Discount",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calculate Weekend Discount",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calculate Last-Minute Discount",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Occupancy Discount": {
+      "main": [
+        [
+          {
+            "node": "IF Auto-Approval Allowed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Weekend Discount": {
+      "main": [
+        [
+          {
+            "node": "IF Auto-Approval Allowed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Last-Minute Discount": {
+      "main": [
+        [
+          {
+            "node": "IF Auto-Approval Allowed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Auto-Approval Allowed": {
+      "main": [
+        [
+          {
+            "node": "Update Price in PriceLabs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Approval Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Price in PriceLabs": {
+      "main": [
+        [
+          {
+            "node": "Log Action to Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Approval Request": {
+      "main": [
+        [
+          {
+            "node": "Log Action to Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-14T00:00:00.000Z",
+  "versionId": "1.0"
+}

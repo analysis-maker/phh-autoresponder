@@ -1,0 +1,54 @@
+{
+  "event_type": "pricing_review_completed",
+  "timestamp": "2025-11-14T08:45:00Z",
+  "source": "Process_Street",
+  "checklist_run_id": "chk_run_789xyz",
+  "data": {
+    "decision": {
+      "status": "approved",
+      "reviewer_name": "John Smith",
+      "reviewer_email": "john@phh.com.au",
+      "reviewed_at": "2025-11-14T08:43:12Z",
+      "notes": "Pricing looks good considering current market conditions. Approved for implementation."
+    },
+    "property_data": {
+      "property_id": "12350",
+      "property_name": "Darling Harbour Luxury",
+      "proposed_base_rate": 382.5,
+      "current_base_rate": 450,
+      "discount_percentage": 15,
+      "action_type": "occupancy_discount"
+    },
+    "peer_comparison": {
+      "peer_average_rate": 395,
+      "variance_from_peers": -3.2,
+      "comparable_properties": [
+        {
+          "id": "ext_001",
+          "name": "Darling Harbour View Apt",
+          "base_rate": 420,
+          "distance_km": 0.8
+        },
+        {
+          "id": "ext_002",
+          "name": "Harbour Bridge Penthouse",
+          "base_rate": 385,
+          "distance_km": 1.2
+        },
+        {
+          "id": "ext_003",
+          "name": "Waterfront 3BR",
+          "base_rate": 380,
+          "distance_km": 0.5
+        }
+      ]
+    },
+    "checklist_responses": {
+      "pricing_within_range": true,
+      "peer_comparison_reviewed": true,
+      "occupancy_data_verified": true,
+      "owner_notification_required": false,
+      "special_conditions": "None"
+    }
+  }
+}
